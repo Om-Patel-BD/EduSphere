@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'student/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h3 class="dashboard-main-title">
+    <i class="bi bi-mortarboard-fill"></i>
+    Welcome, {{ student.name }}
+</h3>
+
+<!-- ===================== -->
+<!-- TOP 4 CARDS -->
+<!-- ===================== -->
+<div class="row g-4 mb-4">
+
+    <!-- Student Info -->   
+    <div class="col-md-3">
+        <div class="card stat-card stat-blue p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Student</h6>
+                    <h3 class="mb-0">{{ student.name }}</h3>
+                    <small>{{ student.roll_no }}</small>
+                </div>
+                <div class="stat-icon text-primary">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance % -->
+    <div class="col-md-3">
+        <div class="card stat-card stat-green p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Attendance</h6>
+                    <h3 class="mb-0">{{ attendance_percent }}%</h3>
+                </div>
+                <div class="stat-icon text-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Present Days -->
+    <div class="col-md-3">
+        <div class="card stat-card stat-orange p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Present Days</h6>
+                    <h3 class="mb-0">{{ present_att }} / {{ total_att }}</h3>
+                </div>
+                <div class="stat-icon text-info">
+                    <i class="bi bi-calendar-check-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Average Marks -->
+    <div class="col-md-3">
+        <div class="card stat-card stat-purple p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Average Marks</h6>
+                    <h3 class="mb-0">{{ avg_marks }}%</h3>
+                </div>
+                <div class="stat-icon text-warning">
+                    <i class="bi bi-bar-chart-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===================== -->
+<!-- GRAPHS -->
+<!-- ===================== -->
+<div class="row g-4 mt-4">
+
+    <!-- SUBJECT-WISE MARKS -->
+    <div class="col-md-4">
+        <div class="card dashboard-chart-card equal-graph-card">
+
+            <div class="chart-header">
+                <h6>Subject-wise Marks</h6>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="marksChart"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ATTENDANCE DISTRIBUTION -->
+    <div class="col-md-4">
+        <div class="card dashboard-chart-card equal-graph-card">
+
+            <div class="chart-header">
+                <h6>Attendance Distribution</h6>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="attendanceChart"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ATTENDANCE TREND -->
+    <div class="col-md-4">
+        <div class="card dashboard-chart-card equal-graph-card">
+
+            <div class="chart-header">
+                <h6>Attendance Trend</h6>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="attendanceTrend"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+
+<script>
+/* Removed global animation override */
+
+function loadCharts() {
+
+    /* =========================
+       SUBJECT-WISE MARKS (BAR)
+    ========================= */
+const marksChart = new Chart(document.getElementById('marksChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ subjects|safe }},
+        datasets: [{
+            data: {{ marks|safe }},
+
+            backgroundColor: 'rgba(17, 112, 171, 0.38)',
+            borderColor: 'rgb(13, 110, 253)',
+
+            borderWidth: 2,
+            borderRadius: 6,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        animations: {
+            y: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            }
+        },
+
+        plugins: { legend: { display: false } },
+
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+    marksChart.update();
+
+
+    /* =========================
+       ATTENDANCE PIE
+    ========================= */
+const attendanceChart = new Chart(document.getElementById('attendanceChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Present', 'Absent'],
+        datasets: [{
+            data: [{{ present_att }}, {{ absent_att }}],
+
+            backgroundColor: [
+                'rgba(22, 212, 123, 0.68)',
+                'rgba(213, 30, 48, 0.58)'
+            ],
+            borderColor: [
+                'rgb(25, 135, 84)',
+                'rgb(220, 53, 69)'
+            ],
+            borderWidth: 2,
+            hoverOffset: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        animations: {
+            animateRotate: true,
+            animateScale: true
+        },
+
+        cutout: '65%',
+
+        plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+                backgroundColor: '#374151',
+                titleColor: '#fff',
+                bodyColor: '#fff'
+            }
+        }
+    }
+});
+
+    attendanceChart.update();
+
+
+    /* =========================
+       ATTENDANCE TREND (LINE)
+    ========================= */
+    const trendChart = new Chart(document.getElementById('attendanceTrend'), {
+    type: 'line',
+    data: {
+        labels: {{ attendance_trend_labels|safe }},
+        datasets: [{
+            label: 'Present',
+            data: {{ attendance_trend|safe }},
+
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(39, 84, 152, 0.45)',
+
+            tension: 0.4,
+            fill: true,
+
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        animations: {
+            tension: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        },
+
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#374151',
+                titleColor: '#fff',
+                bodyColor: '#fff'
+            }
+        },
+
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+    trendChart.update();
+}
+
+
+/* 🔥 DELAY LOAD (IMPORTANT) */
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(loadCharts, 300);
+});
+</script>
+
+{% endblock %}

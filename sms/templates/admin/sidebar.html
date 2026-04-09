@@ -1,0 +1,43 @@
+<ul class="nav flex-column mt-4">
+
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+           href="{% url 'admin_dashboard' %}">
+            <i class="bi bi-speedometer2 me-2"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'admin_manage_students' %}active{% endif %}"
+           href="{% url 'admin_manage_students' %}">
+            <i class="bi bi-people-fill me-2"></i>
+            <span>Manage Students</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'admin_manage_teachers' %}active{% endif %}"
+           href="{% url 'admin_manage_teachers' %}">
+            <i class="bi bi-person-badge-fill me-2"></i>
+            <span>Manage Teachers</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'admin_academic_attendance_overview' %}active{% endif %}"
+           href="{% url 'admin_academic_attendance_overview' %}">
+            <i class="bi bi-graph-up-arrow me-2"></i>
+            <span>Academic & Attendance Overview</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}"
+           href="{% url 'admin_reports' %}">
+            <i class="bi bi-file-earmark-text me-2"></i>
+            <span>Reports</span>
+        </a>
+    </li>
+
+</ul>

@@ -1,0 +1,17 @@
+<h3>Add Marks</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+    <select name="student" required>
+        {% for s in students %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="text" name="subject" placeholder="Subject" required>
+    <input type="number" name="marks" placeholder="Marks" required>
+    <input type="number" name="semester" placeholder="Semester" required>
+
+    <button type="submit">Save Marks</button>
+</form>

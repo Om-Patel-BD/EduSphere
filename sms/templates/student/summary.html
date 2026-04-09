@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+    {% include 'student/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h3 class="academic-summary-title">📊 Academic Summary</h3>
+
+<div class="row g-3 mb-3">
+
+    <!-- ATTENDANCE CARD -->
+    <div class="col-md-3 d-flex">
+        <div class="card stat-card clean-stat-card p-3 text-center w-100 d-flex flex-column justify-content-between">
+
+            <div>
+                <i class="bi bi-calendar-check stat-icon text-primary"></i>
+                <h6 class="mt-2">Attendance</h6>
+                <h3>{{ attendance_percent }}%</h3>
+                <small>{{ present_attendance }} / {{ total_attendance }}</small>
+            </div>
+
+            <div>
+                <span class="badge
+                    {% if attendance_status == 'Excellent' %}bg-success
+                    {% elif attendance_status == 'Good' %}bg-primary
+                    {% else %}bg-danger{% endif %}">
+                    {{ attendance_status }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MARKS CARD -->
+    <div class="col-md-3 d-flex">
+        <div class="card stat-card clean-stat-card p-3 text-center w-100 d-flex flex-column justify-content-between">
+
+            <div>
+                <i class="bi bi-bar-chart-line stat-icon text-success"></i>
+                <h6 class="mt-2">Average Marks</h6>
+                <h3>{{ avg_marks }}</h3>
+            </div>
+
+            <div>
+                <span class="badge
+                    {% if performance_status == 'Top Performer' %}bg-success
+                    {% elif performance_status == 'Average' %}bg-primary
+                    {% else %}bg-danger{% endif %}">
+                    {{ performance_status }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SEMESTER CARD -->
+    <div class="col-md-3 d-flex">
+        <div class="card stat-card clean-stat-card p-3 text-center w-100">
+
+            <i class="bi bi-mortarboard stat-icon text-warning"></i>
+            <h6 class="mt-2">Semester</h6>
+            <h3>{{ student.semester }}</h3>
+
+        </div>
+    </div>
+
+    <!-- RISK CARD -->
+    <div class="col-md-3 d-flex">
+        <div class="card stat-card clean-stat-card p-3 text-center w-100">
+
+            <i class="bi bi-exclamation-triangle stat-icon text-danger"></i>
+            <h6 class="mt-2">Academic Alert</h6>
+
+            {% if risk_message %}
+                <span class="badge bg-danger w-100 py-2 mt-2">{{ risk_message }}</span>
+            {% else %}
+                <span class="badge bg-success w-100 py-2 mt-2">No Risk Detected</span>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
+<!-- SUBJECT PERFORMANCE -->
+<div class="card academic-summary-card">
+
+    <div class="academic-summary-header">
+        📘 Subject-wise Performance
+    </div>
+
+    <div class="p-3">
+
+        <div class="table-responsive">
+            <table class="table table-bordered academic-summary-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in subject_wise_marks %}
+                    <tr>
+                        <td class="subject-cell">📘 {{ item.subject_fk__name }}</td>
+                        <td>
+                            <span class="marks-badge">
+                                {{ item.subject_avg|floatformat:2 }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            No data available
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="academic-summary-footer">
+
+            <div class="row text-center">
+
+                <div class="col-md-6">
+                    <div class="summary-box">
+                        <h6>Total Marks</h6>
+                        <h4>{{ total_marks }}</h4>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="summary-box">
+                        <h6>Overall Percentage</h6>
+                        <h4>{{ overall_percentage }}%</h4>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

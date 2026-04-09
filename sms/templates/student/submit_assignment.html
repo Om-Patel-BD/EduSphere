@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'student/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h3 class="assignment-title">📤 Submit Assignment</h3>
+
+<div class="card assignment-card p-4">
+
+    <!-- FORM -->
+    <form method="post" enctype="multipart/form-data" class="assignment-form">
+
+        {% csrf_token %}
+
+        <!-- Teacher -->
+        <div class="assignment-field">
+            <label>Select Teacher</label>
+            <select name="teacher" class="form-control" required>
+                {% for t in teachers %}
+                <option value="{{ t.id }}">{{ t.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Message -->
+        <div class="assignment-field">
+            <label>Message</label>
+            <textarea name="message"
+                      class="form-control"
+                      placeholder="Write message to teacher"></textarea>
+        </div>
+
+        <!-- File -->
+        <div class="assignment-field">
+            <label>Upload File</label>
+            <input type="file"
+                   name="file"
+                   class="form-control"
+                   required>
+        </div>
+
+        <!-- Button -->
+        <div class="assignment-submit">
+            <button class="btn btn-primary assignment-btn">
+                Submit Assignment
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<!-- SUBMISSIONS -->
+<h5 class="assignment-submissions-title">My Submissions</h5>
+
+<div class="card assignment-table-card p-3">
+
+    <div class="table-responsive">
+        <table class="table table-bordered assignment-table">
+
+            <thead>
+                <tr>
+                    <th>Teacher</th>
+                    <th>Message</th>
+                    <th>File</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for s in my_submissions %}
+                <tr>
+
+                    <td>{{ s.teacher.name }}</td>
+
+                    <td>{{ s.message|default:"-" }}</td>
+
+                    <td>
+                        {% with filename=s.file.name|lower %}
+                            {% if ".pdf" in filename %}
+                                📄
+                            {% elif ".png" in filename or ".jpg" in filename %}
+                                🖼️
+                            {% else %}
+                                📁
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+
+                    <td>
+                        {% if s.status == "pending" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% else %}
+                            <span class="badge bg-success">Reviewed</span>
+                        {% endif %}
+                    </td>
+
+                    <td>{{ s.submitted_at|date:"d M Y H:i" }}</td>
+
+                    <td>
+                        <a href="{% url 'download_submission' s.id %}"
+                        class="btn btn-primary btn-sm">
+                            Download
+                        </a>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        No submissions yet
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

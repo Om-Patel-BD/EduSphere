@@ -1,0 +1,1262 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+    {% include 'teacher/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+    <!-- ===================== -->
+    <!-- DASHBOARD SECTION -->
+    <!-- ===================== -->
+    <div id="dashboardSection">
+        <h3 class="dashboard-main-title">
+            <i class="bi bi-person-workspace"></i>
+            Welcome, <span class="role-text">Faculty</span> {{ request.user.username }}
+        </h3>
+        <div class="row g-4 mb-4">
+            <!-- Total Students -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-blue p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Students</h6>
+                            <h3 class="mb-0">{{ total_students }}</h3>
+                        </div>
+                        <div class="stat-icon text-primary">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Total Teachers -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-green p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Teachers</h6>
+                            <h3 class="mb-0">{{ total_teachers }}</h3>
+                        </div>
+                        <div class="stat-icon text-success">
+                            <i class="bi bi-person-workspace"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Total Subjects -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-orange p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Assigned Subjects</h6>
+                            {% comment %} <h3 class="mb-0">{{ total_subjects }}</h3> {% endcomment %}
+                            
+                            <small class="text-muted">
+                                <div class="subject-scroll mt-1">
+
+                                    {% for sub in teacher_subjects %}
+                                        <span class="badge bg-light text-dark border px-2 py-1">
+                                            {{ sub.name }}
+                                            <small class="text-muted">(S{{ sub.semester }})</small>
+                                        </span>
+                                    {% endfor %}
+
+                                </div>
+                            </small>
+                            
+                        </div>
+                        <div class="stat-icon text-warning">
+                            <i class="bi bi-journal-bookmark-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Attendance Today -->
+            <div class="col-md-3">
+                <div class="card stat-card stat-purple p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Attendance (Today)</h6>
+                            <p class="mb-1 text-success fw-semibold">Present: {{ present_today }}</p>
+                            <p class="mb-0 text-danger fw-semibold">Absent: {{ absent_today }}</p>
+                        </div>
+                        <div class="stat-icon text-info">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4 mt-4">
+            <!-- Attendance Overview -->
+            <div class="col-md-4">
+                <div class="card dashboard-chart-card equal-graph-card">
+                    <div class="chart-header">
+                        <h6>Attendance Overview</h6>
+                        <select class="form-select form-select-sm"
+                                onchange="updateAttendanceGraph(this.value)">
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Marks Distribution -->
+            <div class="col-md-4">
+                <div class="card dashboard-chart-card equal-graph-card">
+                    <div class="chart-header">
+                        <h6>Marks Distribution</h6>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="marksChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Attendance vs Performance -->
+            <div class="col-md-4">
+                <div class="card dashboard-chart-card equal-graph-card">
+                    <div class="chart-header">
+                        <h6>Attendance vs Performance</h6>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="attendanceMarksBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===================== -->
+    <!-- ADD MARKS SECTION -->
+    <!-- ===================== -->
+    <div id="addMarksSection" style="display:none;">
+        <div class="card add-marks-card p-4">
+            <h5 class="add-marks-title">
+                <i class="bi bi-pencil-square"></i> Add Marks
+            </h5>
+            <form method="post" action="{% url 'add_marks' %}">
+                {% csrf_token %}
+                <input type="hidden" name="active_section" value="addMarks">
+                <div class="add-marks-form">
+
+                    <!-- Subject -->
+                    <div class="add-marks-field">
+                        <label>Subject</label>
+                        <select id="subject" name="subject" class="form-control" required>
+                            <option value="">Select Subject</option>
+                            {% for sub in subjects_list %}
+                                <option value="{{ sub.id }}">{{ sub.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Student -->
+                    <div class="add-marks-field">
+                        <label>Select Student</label>
+                        <select id="student" name="student" class="form-control" required>
+                            <option value="">Select Student</option>
+                        </select>
+                    </div>
+
+                    <!-- Marks -->
+                    <div class="add-marks-field">
+                        <label>Marks</label>
+                        <input type="number"
+                               name="marks"
+                               class="form-control"
+                               placeholder="Enter marks"
+                               required>
+                    </div>
+                    <!-- Semester -->
+                    <div class="add-marks-field">
+                        <label>Semester</label>
+                        <input type="number"
+                        id="semester"
+                        name="semester"
+                        class="form-control"
+                        readonly>
+                    </div>
+                </div>
+                <div class="add-marks-submit">
+                    <button type="submit" class="btn btn-success add-marks-btn">
+                        <i class="bi bi-save"></i> Save Marks
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ===================== -->
+    <!-- ATTENDANCE SECTION (DATE-WISE) -->
+    <!-- ===================== -->
+    <div id="attendanceSection" style="display:none;">
+        <div class="card p-4 attendance-card">
+            <h5 class="attendance-title">
+                <i class="bi bi-calendar-check"></i> Mark Attendance
+            </h5>
+            <!-- DATE SELECTOR -->
+            <form method="POST"
+                  action="{% url 'teacher_dashboard' %}"
+                  class="attendance-date-bar">
+                {% csrf_token %}
+                <input type="hidden" name="active_section" value="attendance">
+                <div class="attendance-date-wrapper">
+                    <label class="attendance-date-label">
+                        <i class="bi bi-calendar-event"></i> Select Date
+                    </label>
+                    <input type="date"
+                           name="attendance_date"
+                           class="form-control attendance-date-input"
+                           value="{{ attendance_form_date|date:'Y-m-d' }}"
+                           required
+                           onchange="this.form.submit()">
+                </div>
+            </form>
+            <hr>
+            <form method="POST" action="{% url 'mark_attendance' %}">
+                {% csrf_token %}
+                <input type="hidden"
+                       name="attendance_date"
+                       value="{{ attendance_form_date|date:'Y-m-d' }}">
+                <input type="hidden" name="active_section" value="attendance">
+                {% if not all_marked %}
+                    <!-- BULK ACTION BAR -->
+                    <div class="attendance-toolbar">
+                        <div class="attendance-select">
+                            <input type="checkbox" id="selectAllStudents">
+                            <label for="selectAllStudents">Select All</label>
+                        </div>
+                        <div class="attendance-actions">
+                            <button type="button"
+                                    class="btn btn-success btn-sm"
+                                    onclick="markAll('present')">
+                                <i class="bi bi-check-circle"></i> All Present
+                            </button>
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="markAll('absent')">
+                                <i class="bi bi-x-circle"></i> All Absent
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if all_marked %}
+                    <div class="attendance-complete">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Attendance already marked for all students.
+                    </div>
+                {% else %}
+                    <p class="attendance-students-title">Students</p>
+                    <div class="attendance-grid">
+                        {% for student in students_unmarked %}
+                            <label class="attendance-item">
+                                <input type="checkbox" name="student_ids" value="{{ student.id }}">
+                                <span class="student-name">{{ student.roll_no }} - {{ student.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <br>
+                {% if not all_marked %}
+                    <div class="attendance-status">
+                        <label class="status-present">
+                            <input type="radio" name="status" value="present" required>
+                            Present
+                        </label>
+                        <label class="status-absent">
+                            <input type="radio" name="status" value="absent">
+                            Absent
+                        </label>
+                    </div>
+                    <div class="attendance-submit">
+                        <button type="submit"
+                                class="btn btn-primary attendance-submit-btn"
+                                {% if all_marked %}disabled{% endif %}>
+                            <i class="bi bi-save"></i> Submit Attendance
+                        </button>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <!-- ===================== -->
+    <!-- VIEW STUDENT DETAILS -->
+    <!-- ===================== -->
+    <div id="viewStudentSection" style="display:none;">
+        <div class="card view-student-card p-4">
+            <h5 class="view-student-title">
+                <i class="bi bi-person-lines-fill"></i> View Student Details
+            </h5>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="view_student" value="1">
+                <input type="hidden" name="active_section" value="viewStudent">
+                <div class="view-student-form">
+                    <div class="view-student-select">
+                        <select name="student_id" class="form-control" required >
+                            {% for s in students %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="view-student-button">
+                        <button class="btn btn-primary view-student-btn">
+                            <i class="bi bi-search"></i> View
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% if selected_student %}
+                <hr>
+                <div class="student-summary">
+                    <h6>{{ selected_student.name }}</h6>
+                    <p>Attendance: {{ student_attendance_percent }}%</p>
+                </div>
+                <div class="student-marks-table">
+                    <table class="table table-bordered student-details-table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Marks</th>
+                                <th>Semester</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in student_marks %}
+                                <tr>
+                                    <td>{{ m.subject_fk.name }}</td>
+                                    <td>{{ m.marks }}</td>
+                                    <td>{{ m.semester }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- ===================== -->
+    <!-- ATTENDANCE BY DATE -->
+    <!-- ===================== -->
+    <div id="attendanceByDateSection" style="display:none;">
+        <div class="card attendance-date-card p-4">
+            <h5 class="attendance-date-title">
+                <i class="bi bi-calendar3"></i> Attendance by Date
+            </h5>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="view_attendance_date" value="1">
+                <input type="hidden" name="active_section" value="attendanceByDate">
+                <div class="attendance-date-form">
+                    <div class="attendance-date-student">
+                        <select name="student_id" class="form-control" required>
+                            {% for s in students %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="attendance-date-input">
+                        <input type="date"
+                               name="date"
+                               class="form-control"
+                               value="{{ selected_date|default:'' }}"
+                               required>
+                    </div>
+                    <div class="attendance-date-button">
+                        <button class="btn btn-primary attendance-date-btn">
+                            <i class="bi bi-search"></i> View
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% if attendance_records %}
+                <!-- SUMMARY CARDS -->
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center">
+                            <h6>Total Records</h6>
+                            <h4>{{ total_records_date }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center text-success">
+                            <h6>Present</h6>
+                            <h4>{{ present_count_date }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 text-center text-danger">
+                            <h6>Absent</h6>
+                            <h4>{{ absent_count_date }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- PERCENTAGE -->
+                <div class="mt-3">
+                    <strong>Attendance Rate: {{ attendance_percent_date }}%</strong>
+                    <div class="progress mt-1">
+                        <div class="progress-bar bg-success"
+                             role="progressbar"
+                             style="width: {{ attendance_percent_date }}%"></div>
+                    </div>
+                </div>
+                <!-- TABLE -->
+                <table class="table table-bordered mt-3 attendance-date-table th">
+                    <tr>
+                        <th>Student</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for a in attendance_records %}
+                        <tr>
+                            <td>{{ a.student.name }}</td>
+                            <td>{{ a.date }}</td>
+                            <td>
+                                {% if a.status %}
+                                    <span class="badge bg-success">Present</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Absent</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% elif searched_attendance_date %}
+                <div class="alert alert-info mt-3">No attendance record found for selected student and date.</div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- ===================== -->
+    <!-- MANAGE MARKS -->
+    <!-- ===================== -->
+    <div id="manageMarksSection" style="display:none;">
+        <div class="card p-3">
+            <h5 class="manage-marks-title">
+                <i class="bi bi-journal-check"></i> Manage Marks
+            </h5>
+            <!-- MARKS FILTER BAR -->
+            <form method="GET" class="filter-bar mb-3">
+                <input type="hidden" name="section" value="manageMarks">
+                <div class="row g-2 align-items-center">
+                    <!-- Search -->
+                    <div class="col-md-4">
+                        <select name="student" class="form-control">
+                            <option value="">All Students</option>
+                            {% for s in students_list %}
+                                <option value="{{ s.id }}"
+                                        {% if student_filter == s.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ s.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- Subject -->
+                    <div class="col-md-3">
+                        <select name="subject" class="form-control">
+                            <option value="">All Subjects</option>
+                            {% for sub in subjects_list %}
+                                <option value="{{ sub.id }}"
+                                    {% if subject_filter == sub.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ sub.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- Sort -->
+                    <div class="col-md-3">
+                        <select name="sort_marks" class="form-control">
+                            <option value="">Sort Marks</option>
+                            <option value="asc" {% if sort_marks == "asc" %}selected{% endif %}>Low → High</option>
+                            <option value="desc" {% if sort_marks == "desc" %}selected{% endif %}>High → Low</option>
+                        </select>
+                    </div>
+                    <!-- Buttons (Apply + Reset together) -->
+                    <div class="col-md-2 d-flex gap-2">
+                        <button class="btn btn-primary w-50">Apply</button>
+                        <a href="?section=manageMarks" class="btn btn-secondary w-50">Reset</a>
+                    </div>
+                </div>
+            </form>
+            <table class="table table-bordered manage-marks-table">
+                <thead>
+                    <tr class="text-center">
+                        <th>Student</th>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="bulk_update" value="1">
+    <input type="hidden" name="active_section" value="manageMarks">
+
+    <tbody>
+        {% for m in all_marks %}
+        <tr>
+            <input type="hidden" name="mark_ids" value="{{ m.id }}">
+
+            <td class="text-center">
+                <i class="bi bi-person-circle me-1"></i>
+                {{ m.student.name }}
+            </td>
+
+            <td class="text-center">
+                <input value="{{ m.subject_fk.name }}"
+                       class="form-control text-center"
+                       readonly>
+            </td>
+
+            <td class="text-center">
+                <input name="marks_{{ m.id }}"
+                       value="{{ m.marks }}"
+                       class="form-control text-center">
+            </td>
+
+            <td class="text-center">
+                <button name="delete_mark"
+                        value="{{ m.id }}"
+                        class="btn btn-danger btn-sm">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- ✅ UPDATE ALL BUTTON -->
+<div class="text-center mt-3">
+    <button class="btn btn-success">
+        <i class="bi bi-check2-all"></i> Update All
+    </button>
+</div>
+
+</form>
+            </table>
+            {% if marks_page_obj and marks_page_obj.paginator.num_pages > 1 %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+
+                        <!-- PREVIOUS -->
+                        {% if marks_page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                href="?{{ request.GET.urlencode }}&marks_page={{ marks_page_obj.previous_page_number }}">
+                                    Prev
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <!-- FIRST PAGE -->
+                        <li class="page-item {% if marks_page_obj.number == 1 %}active{% endif %}">
+                            <a class="page-link"
+                            href="?{{ request.GET.urlencode }}&marks_page=1">
+                                1
+                            </a>
+                        </li>
+
+                        <!-- LEFT DOTS -->
+                        {% if marks_page_obj.number > 3 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+
+                        <!-- MIDDLE PAGES -->
+                        {% for num in marks_page_obj.paginator.page_range %}
+                            {% if num > marks_page_obj.number|add:-2 and num < marks_page_obj.number|add:2 and num != 1 and num != marks_page_obj.paginator.num_pages %}
+                                <li class="page-item {% if marks_page_obj.number == num %}active{% endif %}">
+                                    <a class="page-link"
+                                    href="?{{ request.GET.urlencode }}&marks_page={{ num }}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- RIGHT DOTS -->
+                        {% if marks_page_obj.number < marks_page_obj.paginator.num_pages|add:-2 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+
+                        <!-- LAST PAGE -->
+                        <li class="page-item {% if marks_page_obj.number == marks_page_obj.paginator.num_pages %}active{% endif %}">
+                            <a class="page-link"
+                            href="?{{ request.GET.urlencode }}&marks_page={{ marks_page_obj.paginator.num_pages }}">
+                                {{ marks_page_obj.paginator.num_pages }}
+                            </a>
+                        </li>
+
+                        <!-- NEXT -->
+                        {% if marks_page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                href="?{{ request.GET.urlencode }}&marks_page={{ marks_page_obj.next_page_number }}">
+                                    Next
+                                </a>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+    <!-- ===================== -->
+    <!-- MANAGE ATTENDANCE -->
+    <!-- ===================== -->
+    <div id="manageAttendanceSection" style="display:none;">
+        <div class="card p-4 manage-attendance-card">
+            <h5 class="manage-attendance-title">
+                <i class="bi bi-calendar3"></i> Manage Attendance
+            </h5>
+            <!-- DATE FILTER BAR -->
+            <form method="post" class="attendance-filter-bar">
+                {% csrf_token %}
+                <input type="hidden" name="manage_attendance" value="1">
+                <input type="hidden" name="active_section" value="manageAttendance">
+                <div class="attendance-filter-wrapper">
+                    <div class="attendance-filter-item">
+                        <label class="attendance-filter-item label">Select Date</label>
+                        <input type="date"
+                               name="date"
+                               class="form-control"
+                               value="{{ selected_date|default:'' }}"
+                               required>
+                    </div>
+                    <div class="attendance-filter-button">
+                        <button class="btn btn-primary">
+                            <i class="bi bi-search"></i> View
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% if manage_attendance_records %}
+                <!-- ATTENDANCE TABLE -->
+                <div class="attendance-table-wrapper">
+                    <form method="post" id="bulkAttendanceForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="bulk_attendance_update" value="1">
+                        <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                        <input type="hidden" name="active_section" value="manageAttendance">
+
+                        <div class="attendance-grid-modern">
+
+                            {% for a in manage_attendance_records %}
+                                <div class="attendance-box 
+                                    {% if a.status %}present{% else %}absent{% endif %}"
+                                    onclick="handleClick(event, this)"
+                                    data-id="{{ a.id }}"
+                                    data-status="{% if a.status %}present{% else %}absent{% endif %}">
+
+                                    <span>{{ a.student.name }}</span>
+
+                                    <!-- hidden inputs -->
+                                    <input type="hidden" name="status_{{ a.id }}" value="{% if a.status %}present{% else %}absent{% endif %}">
+                                    <input type="checkbox" name="delete_ids" value="{{ a.id }}" hidden>
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="text-center mt-4 d-flex justify-content-center gap-3">
+
+                        <button type="submit" name="bulk_attendance_update" value="1" class="btn btn-success px-4">
+                            <i class="bi bi-check2-all"></i> Update All
+                        </button>
+
+                        <button type="submit" name="delete_selected" value="1" class="btn btn-danger px-4">
+                            <i class="bi bi-trash"></i> Delete Selected
+                        </button>
+
+                        </div>
+                    </form>
+                        
+                    {% endif %}
+                </div>
+            </div>
+            <!-- ===================== -->
+            <!-- STUDY MATERIALS -->
+            <!-- ===================== -->
+            <div id="studyMaterialsSection" style="display:none;">
+                <div class="card p-3">
+                    <h5 class="study-materials-title">
+                        <i class="bi bi-folder2-open"></i> Study Materials
+                    </h5>
+                    <!-- Upload Form -->
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="upload_material" value="1">
+                        <input type="hidden" name="active_section" value="studyMaterials">
+                        <div class="study-materials-form">
+                            <input type="text"
+                                   name="title"
+                                   class="form-control study-input mb-2"
+                                   placeholder="Title"
+                                   required>
+                            <textarea name="description"
+                                      class="form-control study-input mb-2"
+                                      placeholder="Description"></textarea>
+                            <input type="file"
+                                   name="file"
+                                   class="form-control study-input mb-2"
+                                   required>
+                            <label class="study-student-label">Select Students:</label>
+                            <select name="students" class="form-control study-input mb-2" multiple>
+                                {% for s in students %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                            </select>
+                            <div class="study-upload-btn">
+                                <button class="btn btn-success upload-material-btn">
+                                    <i class="bi bi-upload"></i> Upload Material
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <hr>
+                    <!-- Materials List -->
+                    <table class="table table-bordered study-materials-table">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Title</th>
+                                <th>Uploaded On</th>
+                                <th>File</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in teacher_materials %}
+                                <tr class="text-center">
+                                    <td>{{ m.title }}</td>
+                                    <td>{{ m.created_at|date:"d M Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'download_material' m.id %}"
+                                        class="btn btn-primary btn-sm">
+                                            <i class="bi bi-download"></i> Download
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <form method="post" style="display:inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="material_id" value="{{ m.id }}">
+                                            <input type="hidden" name="active_section" value="studyMaterials">
+                                            <button type="submit" name="delete_material" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No materials uploaded yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Submission Section -->
+            <div id="submissionsSection" style="display:none;">
+                <h5 class="submissions-title">
+                    <i class="bi bi-inbox"></i> Student Submissions
+                </h5>
+                <div class="card p-3">
+                    <table class="table table-bordered submissions-table">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Student</th>
+                                <th>Message</th>
+                                <th>File</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in teacher_submissions %}
+                                <tr class="text-center">
+                                    <td>
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        {{ s.student.name }}
+                                    </td>
+                                    <td>{{ s.message|default:"-" }}</td>
+                                    <td>
+                                        {% with filename=s.file.name|lower %}
+                                            {% if ".pdf" in filename %}
+                                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                                            {% elif ".png" in filename or ".jpg" in filename %}
+                                                <i class="bi bi-file-earmark-image-fill text-primary fs-5"></i>
+                                            {% else %}
+                                                <i class="bi bi-file-earmark-fill fs-5"></i>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        {% if s.status == "pending" %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Reviewed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ s.submitted_at|date:"d M Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'download_submission' s.id %}"
+                                        class="btn btn-primary btn-sm">
+                                            <i class="bi bi-download"></i> Download
+                                        </a>
+                                        <a href="{% url 'review_submission' s.id %}"
+                                           class="btn btn-success btn-sm">
+                                            <i class="bi bi-check-lg"></i> Reviewed
+                                        </a>
+                                        <a href="{% url 'delete_submission' s.id %}"
+                                           class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No submissions yet</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- ===================== -->
+            <!-- JS -->
+            <!-- ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+<script>
+/* Removed global animation override */
+
+let attendanceChart = null;
+let marksChart = null;
+let barChart = null;
+
+/* =======================
+   INIT CHARTS (ANIMATED)
+======================= */
+function initCharts() {
+
+    const attendanceCtx = document.getElementById('attendanceChart');
+    const marksCtx = document.getElementById('marksChart');
+    const barCtx = document.getElementById('attendanceMarksBarChart');
+
+    /* 🔵 ATTENDANCE PIE */
+    if (attendanceCtx && !attendanceChart) {
+        attendanceChart = new Chart(attendanceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{
+                    data: [{{ present_count }}, {{ absent_count }}],
+
+                    backgroundColor: [
+                        'rgba(29, 210, 96, 0.57)',
+                        'rgba(239, 68, 68, 0.66)'
+                    ],
+                    borderColor: [
+                        'rgb(34, 197, 94)',
+                        'rgb(239, 68, 68)'
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                animations: {
+                    animateRotate: true,
+                    animateScale: true
+                },
+
+                cutout: '65%',
+
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        backgroundColor: '#374151',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
+            }
+        });
+
+        attendanceChart.update();
+    }
+
+    /* 🟡 MARKS PIE */
+    if (marksCtx && !marksChart) {
+        marksChart = new Chart(marksCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Excellent','Good','Average','Poor'],
+                datasets: [{
+                    data: [
+                        {{ excellent }},
+                        {{ good }},
+                        {{ average }},
+                        {{ poor }}
+                    ],
+
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.25)',
+                        'rgba(25, 135, 84, 0.25)',
+                        'rgba(255, 193, 7, 0.49)',
+                        'rgba(220, 53, 69, 0.25)'
+                    ],
+
+                    borderColor: [
+                        'rgb(13, 110, 253)',
+                        'rgb(25, 135, 84)',
+                        'rgb(255, 193, 7)',
+                        'rgb(220, 53, 69)'
+                    ],
+
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                animations: {
+                    animateRotate: true,
+                    animateScale: true
+                },
+
+                cutout: '65%',
+
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        backgroundColor: '#374151',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
+            }
+        });
+
+        marksChart.update();
+    }
+
+    /* 🟢 BAR CHART (ANIMATED RISING) */
+    if (barCtx && !barChart) {
+        barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Avg Attendance %', 'Avg Marks'],
+                datasets: [{
+                    label: 'Overview',
+                    data: [{{ avg_attendance }}, {{ avg_marks_overall }}],
+
+                    backgroundColor: [
+                        'rgba(13, 109, 253, 0.66)',
+                        'rgba(25, 135, 84, 0.74)'
+                    ],
+
+                    borderColor: [
+                        'rgb(13, 110, 253)',
+                        'rgb(25, 135, 84)'
+                    ],
+
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                animations: {
+                    y: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    }
+                },
+
+                plugins: {
+                    legend: { display: false }
+                },
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        barChart.update();
+    }
+}
+
+/* =======================
+   UPDATE ATTENDANCE GRAPH
+======================= */
+function updateAttendanceGraph(period) {
+    if (!attendanceChart) return;
+
+    const data = {
+        today: [{{ present_count }}, {{ absent_count }}],
+        week: [{{ weekly_present }}, {{ weekly_absent }}],
+        month: [{{ monthly_present }}, {{ monthly_absent }}]
+    };
+
+    attendanceChart.data.datasets[0].data = data[period];
+
+    /* 🔥 RE-ANIMATE ON CHANGE */
+    attendanceChart.update();
+}
+
+/* =======================
+   SECTION SWITCHING
+======================= */
+function showSection(section) {
+
+    const sections = [
+        'dashboard',
+        'addMarks',
+        'attendance',
+        'viewStudent',
+        'attendanceByDate',
+        'manageMarks',
+        'manageAttendance',
+        'studyMaterials',
+        'assignments',
+        'submissions'
+    ];
+
+    sections.forEach(s => {
+        const el = document.getElementById(s + 'Section');
+        if (el) el.style.display = 'none';
+    });
+
+    const active = document.getElementById(section + 'Section');
+    if (active) active.style.display = 'block';
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('section', section);
+    window.history.replaceState({}, '', '?' + params.toString());
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    const activeLink = document.querySelector(
+        `.nav-link[onclick="showSection('${section}')"]`
+    );
+    if (activeLink) activeLink.classList.add('active');
+
+    /* 🔥 IMPORTANT: RELOAD CHARTS WITH DELAY */
+    if (section === 'dashboard') {
+        setTimeout(initCharts, 300);
+    }
+}
+
+/* =======================
+   PAGE LOAD
+======================= */
+document.addEventListener('DOMContentLoaded', function () {
+    const sec = "{{ active_section }}";
+    showSection(sec && sec !== "None" ? sec : 'dashboard');
+});
+
+
+/* =======================
+   BULK ATTENDANCE
+======================= */
+
+// Select All Checkbox
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAllStudents');
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll(
+                'input[name="student_ids"]'
+            );
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        });
+    }
+});
+
+// Mark All Present / Absent
+function markAll(status) {
+
+    const checkboxes = document.querySelectorAll(
+        'input[name="student_ids"]'
+    );
+
+    if (checkboxes.length === 0) {
+        alert("All students already marked.");
+        return;
+    }
+
+    // Select all students automatically
+    checkboxes.forEach(cb => cb.checked = true);
+
+    // Set status radio
+    const statusRadio = document.querySelector(
+        `input[name="status"][value="${status}"]`
+    );
+    if (statusRadio) statusRadio.checked = true;
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const links = document.querySelectorAll(".nav-link[href*='section=']");
+
+    /* -------- Highlight correct link on page load -------- */
+    const params = new URLSearchParams(window.location.search);
+    const currentSection = params.get("section") || "dashboard";
+
+    links.forEach(link => {
+        const url = new URL(link.href);
+        const section = url.searchParams.get("section");
+
+        if (section === currentSection) {
+            link.classList.add("active");
+        } else {
+            link.classList.remove("active");
+        }
+    });
+
+    /* -------- Smooth navigation -------- */
+    links.forEach(link => {
+        link.addEventListener("click", function (e) {
+
+            if (window.location.pathname.includes("teacher-dashboard")) {
+                e.preventDefault();
+
+                const url = new URL(link.href);
+                const section = url.searchParams.get("section");
+
+                if (section) {
+                    showSection(section);
+                    window.history.pushState({}, "", "?section=" + section);
+
+                    // update highlight
+                    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+                    link.classList.add("active");
+                }
+            }
+        });
+    });
+
+});
+
+            </script>
+
+<script>
+document.getElementById("subject").addEventListener("change", function () {
+
+    let subjectId = this.value;
+
+    fetch(`/teacher/get-students-by-subject/?subject_id=${subjectId}`)
+    .then(response => response.json())
+    .then(data => {
+
+        let studentDropdown = document.getElementById("student");
+        studentDropdown.innerHTML = "<option value=''>Select Student</option>";
+
+        data.students.forEach(student => {
+            let option = document.createElement("option");
+            option.value = student.id;
+            option.textContent = student.name;
+            studentDropdown.appendChild(option);
+        });
+
+        // Auto fill semester
+        document.getElementById("semester").value = data.semester || "";
+    });
+});
+</script>
+<script>
+function handleClick(event, box) {
+
+    let statusInput = box.querySelector("input[type='hidden']");
+    let deleteCheckbox = box.querySelector("input[type='checkbox']");
+    let current = box.getAttribute("data-status");
+
+    // ✅ CTRL CLICK → ONLY SELECT (NO COLOR CHANGE)
+    if (event.ctrlKey) {
+        deleteCheckbox.checked = !deleteCheckbox.checked;
+
+        box.style.border = deleteCheckbox.checked
+            ? "3px solid black"
+            : "none";
+
+        return; // ❗ STOP further execution
+    }
+
+    // ✅ NORMAL CLICK → CHANGE STATUS ONLY
+    if (current === "present") {
+        box.classList.remove("present");
+        box.classList.add("absent");
+        box.setAttribute("data-status", "absent");
+        statusInput.value = "absent";
+    } else {
+        box.classList.remove("absent");
+        box.classList.add("present");
+        box.setAttribute("data-status", "present");
+        statusInput.value = "present";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const subject = document.getElementById('subject');
+    const student = document.getElementById('student');
+
+    if (!subject) return;
+
+    subject.addEventListener('change', function () {
+
+        const subjectId = this.value;
+
+        fetch('/teacher/get-students-by-subject/?subject_id=' + subjectId)
+            .then(res => res.json())
+            .then(data => {
+
+                student.innerHTML = '<option value="">Select Student</option>';
+
+                data.students.forEach(s => {
+
+                    let opt = document.createElement('option');
+                    opt.value = s.id;
+
+                    if (s.marked) {
+                        opt.text = '✔ ' + s.name ;
+                        opt.disabled = true;
+                        opt.style.color = 'gray';
+                    } else {
+                        opt.text = s.name;
+                    }
+
+                    student.appendChild(opt);
+                });
+
+                document.getElementById('semester').value = data.semester || '';
+            });
+    });
+
+});
+</script>
+
+
+
+        {% endblock %}

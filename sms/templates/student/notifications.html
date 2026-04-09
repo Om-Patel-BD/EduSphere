@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'student/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h4 class="notifications-title">🔔 Notifications</h4>
+
+{% for note in notifications %}
+<div class="card notification-card mb-3">
+
+    <div class="card-body">
+
+        <!-- Header -->
+        <div class="notification-header">
+            <h6>{{ note.title }}</h6>
+        </div>
+
+        <!-- Message -->
+        <p class="notification-message">
+            {{ note.message }}
+        </p>
+
+        <!-- Meta info -->
+        <div class="notification-meta">
+            <span>By: {{ note.sender.name|default:"Teacher" }}</span>
+            <span>{{ note.created_at|date:"d M Y, h:i A" }}</span>
+        </div>
+
+        <!-- Action -->
+        <div class="notification-action">
+            <a href="{% url 'delete_notification' note.id %}"
+               class="btn btn-sm btn-danger">
+                Delete
+            </a>
+        </div>
+
+    </div>
+
+</div>
+{% empty %}
+<p class="text-center text-muted">No notifications available.</p>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block navbar %}
+    {% include 'common/navbar_auth.html' %}
+{% endblock %}
+
+{% block full_page %}
+
+<div class="auth-page">
+    <div class="auth-card">
+
+        <h2>Create Account</h2>
+        <p class="auth-subtitle">EduSphere</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="login-alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+
+            <div class="auth-form-group">
+                <input type="text" name="username" required>
+                <label>Username</label>
+            </div>
+
+            <div class="auth-form-group">
+                <input type="email" name="email" required>
+                <label>Email</label>
+            </div>
+
+            <div class="auth-form-group" style="position: relative;">
+                <input type="password" name="password" id="registerPassword" required>
+                <label>Password</label>
+
+                <span
+                    class="toggle-password"
+                    onclick="togglePassword('registerPassword', this)"
+                >👁</span>
+            </div>
+
+            <div class="auth-form-group" style="position: relative;">
+                <input type="password" name="confirm_password" id="confirmPassword" required>
+                <label>Confirm Password</label>
+
+                <span
+                    class="toggle-password"
+                    onclick="togglePassword('confirmPassword', this)"
+                >👁</span>
+            </div>
+
+            <div id="passwordError" class="password-error-message" style="display: none;">
+                ⚠ Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+            </div>
+
+            <div id="confirmPasswordError" class="password-error-message" style="display: none;">
+                ⚠ Passwords do not match.
+            </div>
+
+            <div class="auth-form-group">
+                <select name="role" id="roleSelect" required>
+                    <option value=""></option>
+                    <option value="admin">Admin</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="student">Student</option>
+                 </select>
+                <label>Select Role</label>
+            </div>
+
+
+            <!-- Roll Number (ONLY FOR STUDENT) -->
+            <div class="auth-form-group" id="rollNoGroup" style="display: none;">
+                <input type="text" name="roll_no" id="rollNoInput">
+                <label>Roll Number</label>
+            </div>
+
+            <button type="submit" class="auth-btn">
+                Register
+            </button>
+
+            <div class="auth-links-buttons">
+
+                <a href="{% url 'login' %}" class="auth-link-btn outline">
+                    Already Have an Account? Login
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- ✅ JS FOR CONDITIONAL ROLL NUMBER -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleSelect = document.getElementById('roleSelect');
+        const rollNoGroup = document.getElementById('rollNoGroup');
+        const rollNoInput = document.getElementById('rollNoInput');
+
+        if (!roleSelect) return;
+
+        roleSelect.addEventListener('change', function () {
+            if (this.value === 'student') {
+                rollNoGroup.style.display = 'block';
+                rollNoInput.required = true;
+            } else {
+                rollNoGroup.style.display = 'none';
+                rollNoInput.required = false;
+                rollNoInput.value = '';
+            }
+        });
+    });
+</script>
+<script>
+function togglePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.textContent = "🙈";
+    } else {
+        input.type = "password";
+        icon.textContent = "👁";
+    }
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const password = document.getElementById("registerPassword");
+    const confirmPassword = document.getElementById("confirmPassword");
+    const passwordError = document.getElementById("passwordError");
+    const confirmPasswordError = document.getElementById("confirmPasswordError");
+
+    function validatePassword() {
+        const value = password.value;
+
+        const validPassword =
+            value.length >= 8 &&
+            /[A-Z]/.test(value) &&
+            /[a-z]/.test(value) &&
+            /[0-9]/.test(value) &&
+            /[@$!%*?&.#_-]/.test(value);
+
+        if (value.length > 0 && !validPassword) {
+            passwordError.style.display = "flex";
+        } else {
+            passwordError.style.display = "none";
+        }
+
+        return validPassword;
+    }
+
+    function validateConfirmPassword() {
+        if (confirmPassword.value.length > 0 && password.value !== confirmPassword.value) {
+            confirmPasswordError.style.display = "flex";
+            return false;
+        } else {
+            confirmPasswordError.style.display = "none";
+            return true;
+        }
+    }
+
+    password.addEventListener("input", function () {
+        validatePassword();
+        validateConfirmPassword();
+    });
+
+    confirmPassword.addEventListener("input", function () {
+        validateConfirmPassword();
+    });
+
+    form.addEventListener("submit", function (e) {
+        const isPasswordValid = validatePassword();
+        const isConfirmValid = validateConfirmPassword();
+
+        if (!isPasswordValid || !isConfirmValid) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}
+

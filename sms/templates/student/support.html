@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block sidebar %}
+{% include "student/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+<h4 class="support-title">💬 Support Chat</h4>
+
+<!-- Teacher Select -->
+<form method="get" class="support-teacher-form">
+
+    <select name="teacher"
+            class="form-control support-teacher-select"
+            onchange="this.form.submit()">
+
+        <option>Select Teacher</option>
+
+        {% for t in teachers %}
+        <option value="{{ t.id }}"
+        {% if selected_teacher == t.id|stringformat:"s" %}selected{% endif %}>
+            {{ t.name }}
+        </option>
+        {% endfor %}
+
+    </select>
+
+</form>
+
+<!-- Chat Box -->
+<div class="support-chat-box">
+
+    {% for m in messages_list %}
+
+        {% if m.sender == "student" %}
+            <div class="chat-message own-message">
+                <div class="chat-text">{{ m.message }}</div>
+                <div class="chat-meta">
+                    <span class="chat-time">{{ m.sent_at|date:"h:i A" }}</span>
+                    <span class="chat-ticks {% if m.is_seen %}seen{% endif %}">
+                        <i class="bi bi-check2-all"></i>
+                    </span>
+                </div>
+            </div>
+        {% else %}
+            <div class="chat-message other-message">
+                <div class="chat-text">{{ m.message }}</div>
+                <div class="chat-meta">
+                    <span class="chat-time">{{ m.sent_at|date:"h:i A" }}</span>
+                </div>
+            </div>
+        {% endif %}
+
+    {% endfor %}
+
+</div>
+
+<!-- Send Message -->
+<form method="post" class="support-reply-form">
+
+    {% csrf_token %}
+
+    <input type="text"
+           name="message"
+           class="form-control support-input"
+           placeholder="Type message..."
+           required>
+
+    <button class="btn btn-primary support-reply-btn">
+        Send
+    </button>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+<h3>Mark Attendance</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for s in students %}
+        <div>
+            <input type="checkbox" name="{{ s.id }}">
+            {{ s.name }}
+        </div>
+    {% endfor %}
+
+    <button type="submit">Submit Attendance</button>
+</form>

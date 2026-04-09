@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTP</title>
+</head>
+
+<body style="margin:0; padding:0; background:#f4f6f8; font-family:Arial, sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8; padding:20px;">
+<tr>
+<td align="center">
+
+<!-- MAIN CARD -->
+<table width="100%" cellpadding="0" cellspacing="0" 
+       style="max-width:420px; background:#ffffff; border-radius:12px; padding:25px;">
+
+    <!-- TITLE -->
+    <tr>
+        <td align="center">
+            <h2 style="margin:0; font-size:24px;">EduSphere</h2>
+            <p style="margin:5px 0 15px; color:#666;">Verify Your Login</p>
+        </td>
+    </tr>
+
+    <!-- MESSAGE -->
+    <tr>
+        <td align="center">
+            <p style="color:#444; font-size:14px; margin-bottom:15px;">
+                Hello {{ username }},<br>
+                Use the OTP below to login:
+            </p>
+        </td>
+    </tr>
+
+    <!-- OTP BOX -->
+    <tr>
+        <td align="center">
+            <table cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="
+                        background:#f1f5f9;
+                        padding:15px 25px;
+                        border-radius:10px;
+                        font-size:28px;
+                        font-weight:bold;
+                        letter-spacing:6px;
+                        text-align:center;
+                    ">
+                        {{ otp }}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+        <td align="center">
+            <p style="font-size:12px; color:#888; margin-top:20px;">
+                This OTP is valid for a short time.<br>
+                Do not share it with anyone.
+            </p>
+        </td>
+    </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

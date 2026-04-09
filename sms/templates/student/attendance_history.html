@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'student/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h4 class="attendance-history-title">
+    <i class="bi bi-calendar-check-fill"></i>
+    Attendance History
+</h4>
+
+<div class="card attendance-history-card p-3">
+
+    <div class="table-responsive">
+        <table class="table table-bordered attendance-history-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for r in records %}
+                <tr>
+                    <td>{{ r.date }}</td>
+                    <td>
+                        {% if r.status %}
+                            <span class="status-present">✔ Present</span>
+                        {% else %}
+                            <span class="status-absent">✖ Absent</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-center">No records found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

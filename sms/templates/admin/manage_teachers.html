@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'admin/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h4 class="manage-teachers-title">
+    <i class="fas fa-chalkboard-teacher me-2"></i> Manage Teachers
+</h4>
+
+
+
+<!-- ADD TEACHER -->
+<div class="card manage-teachers-card p-4 mb-4">
+    <h6 class="text-center mb-3 ms_title">Add Teacher</h6>
+
+    <form method="post" class="manage-teachers-form">
+        {% csrf_token %}
+        <input type="hidden" name="add_teacher">
+
+        <div class="input-with-icon">
+            <i class="bi bi-person"></i>
+            <input type="text" name="name" class="form-control" placeholder="Teacher Name" required>
+        </div>
+
+        <div class="input-with-icon">
+            <i class="bi bi-envelope"></i>
+            <input type="email" name="email" class="form-control" placeholder="Email" required>
+        </div>
+
+
+        <div class="manage-teachers-submit">
+            <button class="btn btn-success manage-teachers-btn ">Add Teacher</button>
+        </div>
+    </form>
+</div>
+
+<!-- TEACHER LIST -->
+<div class="card manage-teachers-card p-3">
+    <h6 class="text-center mb-3 ms_title">All Teachers</h6>
+
+    <div class="table-responsive">
+        <table class="table table-bordered manage-teachers-table">
+            <thead>
+                <tr>
+                    <th>Teacher</th>
+                    <th>Email</th>
+                    <th>Subjects</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for t in teachers %}
+            <tr>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="teacher_id" value="{{ t.id }}">
+
+                    <!-- NAME WITH ICON -->
+                    <td>
+                        <div class="input-with-icon">
+                            <i class="bi bi-person-circle"></i>
+                            <input name="name" value="{{ t.name }}" class="form-control">
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="input-with-icon">
+                         <i class="fas fa-envelope"></i>
+                        <input name="email" value="{{ t.email }}" class="form-control">
+                        </div>
+                    </td>
+
+                   <td>
+    <a href="{% url 'assign_subjects' %}?teacher={{ t.id }}" class="btn btn-sm btn-info">
+        Manage Subjects
+    </a>
+</td>
+
+                    <td class="manage-actions">
+                        <button name="edit_teacher" class="btn btn-success btn-sm">Update</button>
+                        <button name="delete_teacher"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete this teacher?')">
+                            Delete
+                        </button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,53 @@
+<nav class="navbar navbar-dark custom-navbar px-4">
+    <div class="container-fluid d-flex align-items-center position-relative">
+
+            <!-- AUTH PAGES: CENTER TITLE -->
+        {% if request.path == '/login/' or request.path == '/register/'%}
+            <span class="navbar-brand fw-bold mx-auto">
+                EduSphere
+            </span>
+        {% else %}
+            <!-- DASHBOARD PAGES: LEFT TITLE -->
+            <span class="navbar-brand fw-bold">
+                EduSphere
+            </span>
+
+            <!-- USER AVATAR -->
+            <div class="ms-auto position-relative">
+                <div class="user-avatar" id="userMenuToggle">
+                    {% if request.user.first_name %}
+                        {{ request.user.first_name|slice:":1"|upper }}
+                    {% else %}
+                        {{ request.user.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+
+                <!-- DROPDOWN -->
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="{% url 'logout' %}" class="dropdown-item text-danger">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('userMenuToggle');
+    const dropdown = document.getElementById('userDropdown');
+
+    if (toggle && dropdown) {
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function () {
+            dropdown.classList.remove('show');
+        });
+    }
+});
+</script>

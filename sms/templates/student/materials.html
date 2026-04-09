@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block sidebar %}
+{% include 'student/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h3 class="study-materials-title">📥 My Study Materials</h3>
+
+<div class="card study-materials-card p-3">
+
+    <div class="table-responsive">
+        <table class="table table-bordered study-materials-table">
+
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Teacher</th>
+                    <th>Date</th>
+                    <th>File</th>
+                    <th>Size</th>
+                    <th>Download</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for m in materials %}
+                <tr>
+
+                    <!-- Title + Description -->
+                    <td class="material-title-cell">
+                        <strong>{{ m.title }}</strong><br>
+                        <small class="text-muted">{{ m.description }}</small>
+                    </td>
+
+                    <td>{{ m.uploaded_by.name }}</td>
+                    <td>{{ m.created_at|date:"d M Y" }}</td>
+
+                    <!-- File Icon -->
+                    <td>
+                        {% with filename=m.file.name|lower %}
+                            {% if ".pdf" in filename %}
+                                📄
+                            {% elif ".png" in filename or ".jpg" in filename or ".jpeg" in filename %}
+                                🖼️
+                            {% elif ".doc" in filename or ".docx" in filename %}
+                                📝
+                            {% elif ".ppt" in filename or ".pptx" in filename %}
+                                📊
+                            {% else %}
+                                📁
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+
+                    <td>
+                        {% if m.safe_file_size is not None %}
+                            {{ m.safe_file_size|filesizeformat }}
+                        {% else %}
+                            <span class="text-danger small">Missing</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Download -->
+                    <td>
+                        <a href="{% url 'download_material' m.id %}"
+                        class="btn btn-primary btn-sm">
+                            Download
+                        </a>
+                    </td>
+
+                    <!-- Remove -->
+                    <td>
+                        <a href="{% url 'remove_material' m.id %}"
+                           class="btn btn-danger btn-sm">
+                            Remove
+                        </a>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">
+                        No materials available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">File Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+
+        <!-- Image Preview -->
+        <img id="previewImage" class="img-fluid d-none"/>
+
+        <!-- PDF Preview -->
+        <iframe id="previewFrame"
+                width="100%"
+                height="500px"
+                class="d-none"></iframe>
+
+        <!-- Unsupported File -->
+        <p id="previewUnsupported" class="d-none text-muted">
+            Preview not available for this file type. Please download the file.
+        </p>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

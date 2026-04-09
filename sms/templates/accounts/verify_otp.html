@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+    {% include 'common/navbar_auth.html' %}
+{% endblock %}
+
+{% block full_page %}
+
+<div class="auth-page">
+    <div class="auth-card">
+
+        <h2>Verify OTP</h2>
+        <p class="auth-subtitle">OTP sent to your email</p>
+        
+        
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="auth-form-group">
+                <div class="otp-container">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                    <input type="text" maxlength="1" class="otp-box">
+                </div>
+
+                <!-- hidden field to send full OTP -->
+                <input type="hidden" name="otp" id="otp-hidden">
+            </div>
+
+            <button type="submit" class="auth-btn">
+                Verify & Login
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+const inputs = document.querySelectorAll(".otp-box");
+const hiddenInput = document.getElementById("otp-hidden");
+
+inputs.forEach((input, index) => {
+
+    input.addEventListener("input", () => {
+        if (input.value.length === 1 && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+        }
+        updateOTP();
+    });
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && input.value === "" && index > 0) {
+            inputs[index - 1].focus();
+        }
+    });
+
+});
+
+function updateOTP() {
+    let otp = "";
+    inputs.forEach(input => otp += input.value);
+    hiddenInput.value = otp;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const inputs = document.querySelectorAll(".otp-box");
+    if (inputs.length > 0) {
+        inputs[0].focus();   // 🔥 auto focus first box
+    }
+});
+</script>
+
+{% endblock %}

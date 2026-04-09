@@ -1,0 +1,93 @@
+{% load static %}
+
+<nav class="navbar navbar-dark custom-navbar px-0">
+    <div class="container-fluid d-flex align-items-center px-3">
+
+        <!-- SIDEBAR TOGGLE -->
+        <button id="sidebarToggle" class="sidebar-toggle-btn" type="button">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <!-- LOGO + PROJECT NAME -->
+        <span class="navbar-brand fw-bold brand-animate d-flex align-items-center gap-2">
+
+            <img src="{% static 'images/logof.png' %}"
+                alt="EduSphere Logo"
+                class="navbar-logo">
+
+            <div class="brand-text">
+                <span class="brand-main">EduSphere</span>
+                <span class="brand-tagline">Smart Academic Intelligence</span>
+            </div>
+
+        </span>
+
+
+        <!-- USER AVATAR -->
+        <div class="ms-auto position-relative">
+
+            <div class="user-avatar" id="userMenuToggle">
+                {% if request.user.first_name %}
+                    {{ request.user.first_name|slice:":1"|upper }}
+                {% else %}
+                    {{ request.user.username|slice:":1"|upper }}
+                {% endif %}
+            </div>
+
+            <!-- DROPDOWN MENU -->
+            <div class="user-dropdown" id="userDropdown">
+
+                {% if request.user.profile.role == 'student' %}
+                    <a href="{% url 'student_profile' %}" class="dropdown-item">
+                        👤 My Profile
+                    </a>
+
+                {% elif request.user.profile.role == 'teacher' %}
+                    <a href="{% url 'teacher_profile' %}" class="dropdown-item">
+                        👤 My Profile
+                    </a>
+                {% endif %}
+
+
+                <hr class="dropdown-divider">
+
+                {% if request.user.profile.role == 'teacher' %}
+                    <a href="{% url 'send_notification_page' %}" class="dropdown-item">
+                        🔔 Send Notification
+                    </a>
+                {% endif %}
+
+                <hr class="dropdown-divider">
+
+                <div class="px-3 py-2 text-muted small">
+                    Role: {{ request.user.profile.role|title }} <br>
+                </div>
+
+                <hr class="dropdown-divider">
+
+                <a href="{% url 'logout' %}" class="dropdown-item text-danger">
+                    🚪 Logout
+                </a>
+            </div>
+        </div>
+
+    </div>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('userMenuToggle');
+    const dropdown = document.getElementById('userDropdown');
+
+    if (toggle && dropdown) {
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function () {
+            dropdown.classList.remove('show');
+        });
+    }
+});
+</script>

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'teacher/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h4 class="mb-3">🔔 Send Notification</h4>
+
+<div class="card p-3">
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label class="fw-bold">Title</label>
+    <input type="text" name="title" class="form-control mb-3" required>
+
+    <label class="fw-bold">Message</label>
+    <textarea name="message" class="form-control mb-3" rows="4" required></textarea>
+
+    <label class="fw-bold">Select Students (Optional)</label>
+    <select name="students" class="form-control mb-3" multiple size="6">
+        {% for s in students %}
+        <option value="{{ s.id }}">
+            {{ s.name }} ({{ s.roll_no }})
+        </option>
+        {% endfor %}
+    </select>
+
+    <small class="text-muted">
+        If no student selected → notification sent to ALL students
+    </small>
+
+    <br><br>
+
+    <button class="btn btn-primary">Send Notification</button>
+
+</form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'student/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h4 class="marks-details-title">
+    <i class="bi bi-bar-chart-fill"></i>
+    Marks Details
+</h4>
+
+<div class="card marks-details-card p-3">
+
+    <div class="table-responsive">
+        <table class="table table-bordered marks-details-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Marks</th>
+                    <th>Semester</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for m in marks %}
+                <tr>
+                    <td class="subject-cell">
+                        <i class="fa-solid fa-book"></i> {{ m.subject_fk.name }}
+                    </td>
+
+                    <td>
+                        <span class="marks-badge">{{ m.marks }}</span>
+                    </td>
+
+                    <td>{{ m.semester }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center">No marks available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

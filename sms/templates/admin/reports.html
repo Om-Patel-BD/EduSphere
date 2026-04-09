@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'admin/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h4 class="reports-title">
+    <i class="fas fa-file-alt me-2"></i> Reports & Analytics
+</h4>
+
+<!-- ===================== -->
+<!-- STUDENT REPORT -->
+<!-- ===================== -->
+<div class="card reports-card p-4 mb-4">
+
+    <h6 class="text-center mb-3">
+        <i class="fas fa-user-graduate me-1"></i>
+        Student Performance Report
+    </h6>
+
+    <form method="post" class="reports-form">
+        {% csrf_token %}
+        <input type="hidden" name="student_report">
+
+        <select name="student_id" class="form-control reports-input" required>
+            {% for s in students %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="reports-btn-wrapper">
+            <button class="btn btn-primary reports-btn">View Report</button>
+        </div>
+    </form>
+
+    {% if selected_student %}
+    <hr>
+
+    <div class="text-center mb-2">
+        <h6><i class="fas fa-user"></i> {{ selected_student.name }}</h6>
+        <p class="text-success fw-semibold">
+            <i class="fas fa-chart-line"></i> Attendance: {{ attendance_percent }}%
+        </p>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table reports-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Marks</th>
+                    <th>Semester</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in student_marks %}
+                <tr>
+                    <td>{{ m.subject }}</td>
+                    <td>{{ m.marks }}</td>
+                    <td>{{ m.semester }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ===================== -->
+<!-- ATTENDANCE REPORT -->
+<!-- ===================== -->
+<div class="card reports-card p-4 mb-4">
+
+    <h6 class="text-center mb-3">
+        <i class="fas fa-calendar-check me-1"></i>
+        Attendance Report
+    </h6>
+
+    <form method="post" class="reports-form">
+        {% csrf_token %}
+        <input type="hidden" name="attendance_report">
+
+        <input type="date" name="date" class="form-control reports-input" required>
+
+        <div class="reports-btn-wrapper">
+            <button class="btn btn-primary reports-btn">View Report</button>
+        </div>
+    </form>
+
+    {% if attendance_records %}
+    <div class="table-responsive mt-3">
+        <table class="table reports-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in attendance_records %}
+                <tr>
+                    <td>{{ a.student.name }}</td>
+                    <td>
+                        <span class="{% if a.status %}text-success{% else %}text-danger{% endif %}">
+                            {{ a.status|yesno:"Present,Absent" }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ===================== -->
+<!-- MARKS REPORT -->
+<!-- ===================== -->
+<div class="card reports-card p-4">
+
+    <h6 class="text-center mb-3">
+        <i class="fas fa-book me-1"></i>
+        Marks Report
+    </h6>
+
+    <form method="post" class="reports-form">
+        {% csrf_token %}
+        <input type="hidden" name="marks_report">
+
+        <input type="text" name="subject"
+               class="form-control reports-input"
+               placeholder="Enter Subject Name" required>
+
+        <div class="reports-btn-wrapper">
+            <button class="btn btn-primary reports-btn">View Report</button>
+        </div>
+    </form>
+
+    {% if subject_marks %}
+    <div class="table-responsive mt-3">
+        <table class="table reports-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Marks</th>
+                    <th>Semester</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in subject_marks %}
+                <tr>
+                    <td>{{ m.student.name }}</td>
+                    <td>{{ m.marks }}</td>
+                    <td>{{ m.semester }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+{% include 'admin/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================== -->
+
+<!-- PAGE TITLE -->
+
+<!-- ===================== -->
+
+<h4 class="manage-teachers-title">
+    <i class="fas fa-book me-2"></i> Assign Subjects
+</h4>
+
+<!-- ===================== -->
+
+<!-- ADD SUBJECT -->
+
+<!-- ===================== -->
+
+<div class="card manage-teachers-card p-4 mb-4">
+    <h6 class="text-center mb-3 ms_title">Add New Subject</h6>
+
+
+<form method="POST" class="manage-teachers-form">
+    {% csrf_token %}
+    <input type="hidden" name="add_subject">
+
+    <div class="input-with-icon">
+        <i class="bi bi-journal-bookmark"></i>
+        <input type="text" name="subject_name" class="form-control" placeholder="Subject Name" required>
+    </div>
+
+    <div class="input-with-icon">
+        <i class="bi bi-layers"></i>
+        <input type="number" name="semester" class="form-control" placeholder="Semester" required>
+    </div>
+
+    <div class="manage-teachers-submit">
+        <button class="btn btn-success manage-teachers-btn">Add Subject</button>
+    </div>
+</form>
+
+
+</div>
+
+<!-- ===================== -->
+
+<!-- MANAGE SUBJECTS -->
+
+<!-- ===================== -->
+
+<div class="card manage-teachers-card p-3 mb-4">
+    <h6 class="text-center mb-3 ms_title">Manage Subjects</h6>
+
+
+<!-- FILTER -->
+<form method="GET" class="mb-3">
+    <select name="subject_filter" class="form-control text-center" onchange="this.form.submit()">
+
+        <option value="" {% if not selected_subject_id %}selected{% endif %}>
+            Select Subject
+        </option>
+
+        <option value="all" {% if selected_subject_id == "all" %}selected{% endif %}>
+            All Subjects
+        </option>
+
+        {% for s in all_subjects %}
+            <option value="{{ s.id }}"
+                {% if selected_subject_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.name }} (Sem {{ s.semester }})
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+<!-- TABLE -->
+<div class="table-responsive">
+    <table class="table table-bordered manage-teachers-table">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Semester</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for s in subjects %}
+            <tr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="subject_id" value="{{ s.id }}">
+
+                    <td>
+                        <input type="text" name="subject_name" value="{{ s.name }}" class="form-control text-center">
+                    </td>
+
+                    <td>
+                        <input type="number" name="semester" value="{{ s.semester }}" class="form-control text-center">
+                    </td>
+
+                    <td class="manage-actions">
+                        <button name="edit_subject" class="btn btn-success btn-sm">Update</button>
+                        <button name="delete_subject" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete this subject?')">
+                            Delete
+                        </button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+</div>
+
+<!-- ===================== -->
+
+<!-- ASSIGN SUBJECTS -->
+
+<!-- ===================== -->
+
+<div class="card manage-teachers-card p-4">
+
+
+<h6 class="text-center mb-3 ms_title">Assign Subjects to Teacher</h6>
+
+<!-- SELECT TEACHER -->
+<form method="GET" class="mb-3">
+    <div class="input-with-icon">
+        <i class="bi bi-person"></i>
+        <select name="teacher" class="form-control text-center" onchange="this.form.submit()">
+            <option value="">Select Teacher</option>
+            {% for t in teachers %}
+                <option value="{{ t.id }}"
+                    {% if selected_teacher and t.id == selected_teacher.id %}selected{% endif %}>
+                    {{ t.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+{% if selected_teacher %}
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="teacher" value="{{ selected_teacher.id }}">
+
+    <div class="table-responsive">
+        <table class="table table-bordered manage-teachers-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Assign</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for s in assign_subjects_list %}
+                <tr>
+
+                    <td>
+                        <i class="bi bi-book me-1"></i>
+                        {{ s.name }}
+                        <small class="text-muted">(Sem {{ s.semester }})</small>
+                    </td>
+
+                    <td>
+                        {% if s.id in assigned_subject_ids %}
+                            <span class="badge bg-success">Assigned</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Not Assigned</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <input type="checkbox"
+                               class="form-check-input"
+                               name="subjects"
+                               value="{{ s.id }}"
+                               {% if s.id in assigned_subject_ids %}checked{% endif %}>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-center mt-3">
+        <button class="btn btn-primary manage-teachers-btn">
+            Update Subjects
+        </button>
+    </div>
+</form>
+
+{% endif %}
+
+
+</div>
+
+{% endblock %}
