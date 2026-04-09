@@ -205,9 +205,9 @@ def verify_otp(request):
             request.session.pop('otp_user_id', None)
 
             return redirect('student_dashboard')
-
         else:
             messages.error(request, "Invalid OTP")
+            return redirect('verify_otp')
 
     return render(request, 'accounts/verify_otp.html')
 

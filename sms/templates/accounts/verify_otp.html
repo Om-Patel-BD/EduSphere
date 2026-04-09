@@ -9,6 +9,14 @@
 <div class="auth-page">
     <div class="auth-card">
 
+    {% if messages %}
+        {% for message in messages %}
+            <div class="login-alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
         <h2>Verify OTP</h2>
         <p class="auth-subtitle">OTP sent to your email</p>
         
@@ -68,9 +76,20 @@ function updateOTP() {
 document.addEventListener("DOMContentLoaded", function () {
     const inputs = document.querySelectorAll(".otp-box");
     if (inputs.length > 0) {
-        inputs[0].focus();   // 🔥 auto focus first box
+        inputs[0].focus();  
     }
 });
+</script>
+<script>
+setTimeout(function () {
+    const alerts = document.querySelectorAll('.login-alert');
+    alerts.forEach(function(alert) {
+        alert.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+        alert.style.opacity = "0";
+        alert.style.transform = "translateY(-5px)";
+        setTimeout(() => alert.remove(), 500);
+    });
+}, 1500);  
 </script>
 
 {% endblock %}
