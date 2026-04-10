@@ -3,8 +3,11 @@
     <ul class="nav flex-column mt-4">
 
         <li class="nav-item">
-            <a class="nav-link active"
-               href="{% url 'teacher_dashboard' %}?section=dashboard">
+            <a class="nav-link 
+            {% if request.GET.section == 'dashboard' and request.resolver_match.url_name != 'teacher_support' %}
+            active
+            {% endif %}"
+            href="{% url 'teacher_dashboard' %}?section=dashboard">
                 <i class="bi bi-speedometer2 me-2"></i>
                 <span>Dashboard</span>
             </a>
@@ -75,7 +78,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link"
+            <a class="nav-link {% if request.resolver_match.url_name == 'teacher_support' %}active{% endif %}"
             href="{% url 'teacher_support' %}">
                 <i class="bi bi-chat-dots me-2"></i>
                 <span>Student Support</span>
