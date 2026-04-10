@@ -83,7 +83,7 @@
                     <td>
                         {% with filename=s.file.name|lower %}
                             {% if ".pdf" in filename %}
-                                📄
+                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
                             {% elif ".png" in filename or ".jpg" in filename %}
                                 🖼️
                             {% else %}
